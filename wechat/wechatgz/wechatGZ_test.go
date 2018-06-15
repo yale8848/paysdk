@@ -2,8 +2,8 @@
 package wechatgz
 
 import (
-	"paysdk"
-	"paysdk/wechat"
+	"github.com/yale8848/paysdk"
+	"github.com/yale8848/paysdk/wechat"
 	"testing"
 )
 

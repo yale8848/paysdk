@@ -3,11 +3,11 @@ package test
 
 import (
 	"fmt"
+	"github.com/yale8848/paysdk"
+	"github.com/yale8848/paysdk/wechat"
+	"github.com/yale8848/paysdk/wechat/wechatapp"
 	"io/ioutil"
 	"net/http"
-	"paysdk"
-	"paysdk/wechat"
-	"paysdk/wechat/wechatapp"
 	"strconv"
 	"testing"
 )

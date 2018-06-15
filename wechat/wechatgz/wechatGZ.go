@@ -4,9 +4,9 @@ package wechatgz
 import (
 	"errors"
 	"fmt"
-	"paysdk"
-	"paysdk/util"
-	"paysdk/wechat"
+	"github.com/yale8848/paysdk"
+	"github.com/yale8848/paysdk/util"
+	"github.com/yale8848/paysdk/wechat"
 	"strings"
 	"time"
 )

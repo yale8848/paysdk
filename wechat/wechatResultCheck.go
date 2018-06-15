@@ -5,9 +5,9 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"github.com/yale8848/paysdk/util"
 	"io/ioutil"
 	"net/http"
-	"paysdk/util"
 	"sort"
 	"strings"
 )

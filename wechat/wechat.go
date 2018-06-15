@@ -6,9 +6,9 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"paysdk"
-	"paysdk/common"
-	"paysdk/util"
+	"github.com/yale8848/paysdk"
+	"github.com/yale8848/paysdk/common"
+	"github.com/yale8848/paysdk/util"
 	"sort"
 	"strings"
 )
