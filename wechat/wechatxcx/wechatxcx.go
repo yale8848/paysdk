@@ -2,8 +2,8 @@
 package wechatxcx
 
 import (
+	"errors"
 	"fmt"
-	"iris/core/errors"
 	"paysdk"
 	"paysdk/util"
 	"paysdk/wechat"
@@ -11,13 +11,13 @@ import (
 	"time"
 )
 
-var weChatGZ *WeChatXCX
+var wechatXCX *WeChatXCX
 
 func init() {
-	weChatGZ = &WeChatXCX{}
+	wechatXCX = &WeChatXCX{}
 }
 func WeChat() *WeChatXCX {
-	return weChatGZ
+	return wechatXCX
 }
 
 type WeChatXCX struct {
