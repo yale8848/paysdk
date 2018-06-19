@@ -20,31 +20,19 @@ func WeChat() *WeChatXCX {
 	return wechatXCX
 }
 
-type WeChatXCX struct {
-	wechat.WeChat
+type Pay struct {
+	wechat.WeChatPay
 }
 
-func (w *WeChatXCX) CheckOrderParams(params *paysdk.OrderParams) error {
-	err := w.WeChat.CheckOrderParams(params)
-	if err != nil {
-		return err
-	}
-
-	if len(params.Openid) == 0 {
-		return errors.New("参数有误")
-	}
-	return nil
-
-}
-func (w *WeChatXCX) Order(params *paysdk.OrderParams) error {
-
+func (wp *Pay) Order(params *paysdk.OrderParams) error {
+	w := wechatXCX
 	wechatInfo := w.GetInfo(params.AppName)
 
 	err := w.CheckOrderParams(params)
 	if err != nil {
 		return err
 	}
-	return w.UnifyOrder(wechatInfo, params, func(m *map[string]string) {
+	res, ret, err := w.UnifyOrder(wechatInfo, params, func(m *map[string]string) {
 
 		(*m)["trade_type"] = "JSAPI"
 		(*m)["openid"] = params.Openid
@@ -71,7 +59,33 @@ func (w *WeChatXCX) Order(params *paysdk.OrderParams) error {
 		wrr.Package = c["package"]
 		wrr.SignType = c["signType"]
 		wrr.Sign = sign
+		wrr.MchID = wechatInfo.MchID
+		wrr.PrepayId = xmlRes.PrepayID
 		return wrr, nil
 	})
+	if err != nil {
+		return err
+	}
+	wp.WeChatRetResult = ret
+	wp.WeChatResResult = res
+	return nil
 
+}
+
+type WeChatXCX struct {
+	wechat.WeChat
+}
+
+func (w *WeChatXCX) CheckOrderParams(params *paysdk.OrderParams) error {
+	err := w.WeChat.CheckOrderParams(params)
+	if err != nil {
+		return err
+	}
+	if len(params.Openid) == 0 {
+		return errors.New("参数有误")
+	}
+	return nil
+}
+func (w *WeChatXCX) Pay() *Pay {
+	return &Pay{}
 }

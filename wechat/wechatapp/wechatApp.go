@@ -10,21 +10,24 @@ import (
 	"time"
 )
 
-var weChatGZ *WeChatApp
+var weChatApp *WeChatApp
 
 func init() {
-	weChatGZ = &WeChatApp{}
+	weChatApp = &WeChatApp{}
 }
 func WeChat() *WeChatApp {
-	return weChatGZ
+	return weChatApp
 }
 
 type WeChatApp struct {
 	wechat.WeChat
 }
+type Pay struct {
+	wechat.WeChatPay
+}
 
-func (w *WeChatApp) Order(params *paysdk.OrderParams) error {
-
+func (p *Pay) Order(params *paysdk.OrderParams) error {
+	w := weChatApp
 	wechatInfo := w.GetInfo(params.AppName)
 
 	err := w.CheckOrderParams(params)
@@ -32,7 +35,7 @@ func (w *WeChatApp) Order(params *paysdk.OrderParams) error {
 		return err
 	}
 
-	return w.UnifyOrder(wechatInfo, params, func(m *map[string]string) {
+	res, ret, err := w.UnifyOrder(wechatInfo, params, func(m *map[string]string) {
 		(*m)["trade_type"] = "APP"
 	}, func(xmlRes *wechat.WeChatResResult) (*wechat.WeChatRetResult, error) {
 		c := make(map[string]string)
@@ -54,10 +57,20 @@ func (w *WeChatApp) Order(params *paysdk.OrderParams) error {
 		wrr.AppID = wechatInfo.AppID
 		wrr.Sign = sign
 		wrr.NonceStr = c["noncestr"]
-		wrr.PartnerId = c["partnerid"]
+		wrr.MchID = c["partnerid"]
 		wrr.TimeStamp = c["timestamp"]
 		wrr.PrepayId = c["prepayid"]
+		wrr.SignType = "MD5"
 
 		return wrr, nil
 	})
+	if err != nil {
+		return err
+	}
+	p.WeChatRetResult = ret
+	p.WeChatResResult = res
+	return nil
+}
+func (w *WeChatApp) Pay() *Pay {
+	return &Pay{}
 }

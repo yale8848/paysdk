@@ -20,7 +20,9 @@ type AddMapFunSign func(xmlRes *WeChatResResult) (*WeChatRetResult, error)
 
 type WeChat struct {
 	infoMap map[string]*WeChatPayInfo
+}
 
+type WeChatPay struct {
 	WeChatResResult *WeChatResResult
 	WeChatRetResult *WeChatRetResult
 }
@@ -33,15 +35,15 @@ type WeChatPayInfo struct {
 	PayUrl    string
 }
 type WeChatRetResult struct {
-	AppID     string
-	PartnerId string
-	Package   string
-	PrepayId  string
-	NonceStr  string
-	TimeStamp string
-	Sign      string
-	SignType  string
-	CodeUrl   string
+	AppID     string `json:"appId"`
+	MchID     string `json:"mchId"`
+	Package   string `json:"package"`
+	PrepayId  string `json:"prepayId"`
+	NonceStr  string `json:"nonceStr"`
+	TimeStamp string `json:"timeStamp"`
+	Sign      string `json:"sign"`
+	SignType  string `json:"signType"`
+	CodeUrl   string `json:"codeUrl"`
 }
 
 type WeChatResResult struct {
@@ -145,7 +147,7 @@ func (w *WeChat) CheckOrderParams(params *paysdk.OrderParams) error {
 
 }
 func (w *WeChat) UnifyOrder(wechatInfo *WeChatPayInfo, params *paysdk.OrderParams, request AddMapFun, response AddMapFunSign,
-) error {
+) (*WeChatResResult, *WeChatRetResult, error) {
 	var m = make(map[string]string)
 	m["appid"] = wechatInfo.AppID
 	m["mch_id"] = wechatInfo.MchID
@@ -163,37 +165,35 @@ func (w *WeChat) UnifyOrder(wechatInfo *WeChatPayInfo, params *paysdk.OrderParam
 
 	sign, err := w.GenSign(wechatInfo.ApiKey, m)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	m["sign"] = sign
 
 	xmlStr := util.Map2XML(m)
 	re, err := common.HttpPost(getDefaultOrderUrl(wechatInfo.PayUrl), "text/xml:charset=UTF-8", xmlStr)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	var xmlRes WeChatResResult
 
 	err = xml.Unmarshal(re, &xmlRes)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	if xmlRes.ReturnCode != "SUCCESS" {
-		return errors.New(xmlRes.ReturnMsg)
+		return nil, nil, errors.New(xmlRes.ReturnMsg)
 	}
 
 	if xmlRes.ResultCode != "SUCCESS" {
-		return errors.New(xmlRes.ErrCodeDes)
+		return nil, nil, errors.New(xmlRes.ErrCodeDes)
 	}
 
 	c, err := response(&xmlRes)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
-	w.WeChatRetResult = c
-	w.WeChatResResult = &xmlRes
-	return nil
+	return &xmlRes, c, nil
 }
 func CheckSign(data string, sign string, key string) error {
 	signData := data + "&key=" + key

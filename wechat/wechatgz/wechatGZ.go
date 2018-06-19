@@ -36,15 +36,20 @@ func (w *WeChatGZ) CheckOrderParams(params *paysdk.OrderParams) error {
 	return nil
 
 }
-func (w *WeChatGZ) Order(params *paysdk.OrderParams) error {
 
+type Pay struct {
+	wechat.WeChatPay
+}
+
+func (p *Pay) Order(params *paysdk.OrderParams) error {
+	w := weChatGZ
 	wechatInfo := w.GetInfo(params.AppName)
 
 	err := w.CheckOrderParams(params)
 	if err != nil {
 		return err
 	}
-	return w.UnifyOrder(wechatInfo, params, func(m *map[string]string) {
+	res, ret, err := w.UnifyOrder(wechatInfo, params, func(m *map[string]string) {
 
 		(*m)["trade_type"] = "JSAPI"
 		(*m)["openid"] = params.Openid
@@ -70,7 +75,18 @@ func (w *WeChatGZ) Order(params *paysdk.OrderParams) error {
 		wrr.Package = c["package"]
 		wrr.SignType = c["signType"]
 		wrr.Sign = sign
+		wrr.MchID = wechatInfo.MchID
+		wrr.PrepayId = xmlRes.PrepayID
 		return wrr, nil
 	})
+	if err != nil {
+		return err
+	}
+	p.WeChatRetResult = ret
+	p.WeChatResResult = res
+	return nil
 
+}
+func (w *WeChatGZ) Pay() *Pay {
+	return &Pay{}
 }
